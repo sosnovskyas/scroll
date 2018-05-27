@@ -1,6 +1,6 @@
 import * as React from "react";
 import { connect } from "react-redux";
-import { Scroll } from "../../components/sctoll";
+import { Scroll } from "../../components/scroll/sctoll";
 import {
   IGalleryContainerComponentProps,
   IGalleryImage
@@ -18,8 +18,11 @@ export const GalleryContainerComponent = (
   return (
     <ImagesScroll
       height={200}
-      width={300}
-      count={10}
+      width={150}
+      itemHeight={100}
+      itemWidth={100}
+      activeCount={10}
+      delay={50}
       items={items}
       item={ImageItem}
     />

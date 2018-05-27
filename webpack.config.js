@@ -23,6 +23,10 @@ module.exports = {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: path.join(__dirname, "node_modules")
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: ["file-loader"]
       }
     ]
   },

@@ -8,10 +8,13 @@
     "start": "webpack-dev-server --mode development"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.109",
     "@types/react": "^16.0.40",
     "@types/react-dom": "^16.0.4",
     "@types/react-redux": "^6.0.0",
+    "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.0.6",
+    "loadsh": "^1.0.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.7",

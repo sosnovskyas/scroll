@@ -1,56 +1,22 @@
-import { UIEventHandler } from "react";
 import * as React from "react";
+import { UIEventHandler } from "react";
 import { debounce } from "lodash";
-import styled from "styled-components";
-
-interface IScrollWrapperOptions<T> {
-  itemHeight: number;
-  itemWidth: number;
-  width: number;
-  height: number;
-  activeCount?: number;
-  delay?: number;
-  items: T[];
-  item: (props: T) => React.ReactElement<T>;
-}
-
-interface IScrollWrapperState<T> {
-  currentItem: number;
-}
-
-const ScrollWrapper = styled<{ width: number; height: number }, "div">("div")`
-  border: 1px dashed brown;
-  height: ${p => p.height}px;
-  width: ${p => p.width}px;
-  overflow: auto;
-`;
-const Layout = styled<{ width: number; height: number }, "div">("div")`
-  position: relative;
-  height: ${p => p.height}px;
-  width: ${p => p.width}px;
-  // background-image: ;
-`;
-
-const ItemWrapper = styled<{ index: number; height: number }, "div">("div")`
-  position: absolute;
-  top: ${p => p.index * p.height}px;
-  border: 1px solid black;
-  width: 100px;
-  height: ${p => p.height}px;
-`;
+import { ItemWrapper, Layout, ScrollWrapper } from "./scroll-elements";
+import { IScrollWrapperOptions, IScrollWrapperState } from "./scroll-types";
 
 export class Scroll<T> extends React.Component<
   IScrollWrapperOptions<T>,
   IScrollWrapperState<T>
 > {
-  private readonly items: T[];
+  private readonly items: { options: T; index: number }[];
   private readonly Item: (props: T) => React.ReactElement<T>;
   private readonly itemHeight: number;
   private readonly itemWidth: number;
   private readonly height: number;
   private readonly width: number;
-  private readonly activeCount: number = 10;
-  private readonly delay: number = 0;
+  private readonly activeCount: number;
+  private readonly delay: number;
+  private readonly currentItemUpdate: (currentItem: number) => void;
 
   constructor(props: IScrollWrapperOptions<T>) {
     super(props);
@@ -74,21 +40,17 @@ export class Scroll<T> extends React.Component<
     this.itemHeight = itemHeight;
     this.activeCount = activeCount;
     this.delay = delay;
-    this.items = items;
+    this.items = items.map((item, index) => ({ options: item, index }));
     this.Item = item;
-
-    console.log(this);
+    this.currentItemUpdate = debounce((currentItem: number) => {
+      console.log("update");
+      this.setState({
+        currentItem
+      });
+    }, this.delay);
   }
 
-  private currentItemUpdate = debounce((currentItem: number) => {
-    console.log("update", currentItem);
-    this.setState({
-      currentItem
-    });
-  }, 500);
-
   private onScroll: UIEventHandler<HTMLElement> = event => {
-    console.log("scroll");
     const currentItem = Math.floor(
       event.currentTarget.scrollTop / this.itemHeight
     );
@@ -96,25 +58,31 @@ export class Scroll<T> extends React.Component<
   };
 
   public render() {
+    const rowItemsCount = Math.floor(this.width / this.itemWidth);
+    const layoutWidth = rowItemsCount * this.itemWidth;
     const layoutHeight = this.items.length * this.itemHeight;
-    const before = Math.floor(this.state.currentItem - this.activeCount / 2);
-    const after = Math.floor(this.state.currentItem + this.activeCount / 2);
+    const beforeOffset = Math.floor(this.activeCount / 2);
+    const afterOffset = Math.max(1, Math.floor(this.activeCount / 2));
+    const before = this.state.currentItem - beforeOffset;
+    const after = this.state.currentItem + afterOffset;
     const from = Math.max(0, before);
     const to = Math.min(this.items.length, after);
     const items = this.items.slice(from, to);
 
-    console.log({ before, after, from, to });
-    console.log(items);
     return (
       <ScrollWrapper
         height={this.height}
         width={this.width}
         onScroll={this.onScroll}
       >
-        <Layout height={layoutHeight} width={100}>
+        <Layout height={layoutHeight} width={layoutWidth} itemSize={this.itemHeight}>
           {items.map((item, index) => (
-            <ItemWrapper key={index} index={index} height={this.itemHeight}>
-              <this.Item {...item} />{" "}
+            <ItemWrapper
+              key={index}
+              index={item.index}
+              height={this.itemHeight}
+            >
+              <this.Item {...item.options} />{" "}
             </ItemWrapper>
           ))}
         </Layout>
